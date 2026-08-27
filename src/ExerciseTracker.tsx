@@ -1,9 +1,26 @@
 import { useMemo, useState } from 'react'
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts'
 import type { ExerciseSet } from './types'
 import { COMMON_EXERCISES } from './types'
 import { useLocalStorageList } from './useLocalStorageList'
 
 const REP_INCREMENTS = [1, 5, 10] as const
+type RangeOption = '7' | '30' | '90' | 'all'
+
+const RANGE_LABELS: Record<RangeOption, string> = {
+  '7': '7 days',
+  '30': '30 days',
+  '90': '90 days',
+  all: 'All time',
+}
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10)
@@ -12,24 +29,45 @@ function todayIso() {
 export default function ExerciseTracker() {
   const { items, addItem, removeItem } = useLocalStorageList<ExerciseSet>('exercise-sets')
   const [exerciseName, setExerciseName] = useState<string>(COMMON_EXERCISES[0])
-  const [customExercise, setCustomExercise] = useState('')
   const [reps, setReps] = useState(0)
   const [addedWeight, setAddedWeight] = useState('')
   const [date, setDate] = useState(todayIso())
-
-  const effectiveName = exerciseName === '__custom__' ? customExercise.trim() : exerciseName
+  const [range, setRange] = useState<RangeOption>('30')
 
   const sorted = useMemo(
     () => [...items].sort((a, b) => b.date.localeCompare(a.date)),
     [items],
   )
 
+  const chartData = useMemo(() => {
+    let scoped = items.filter((entry) => entry.exerciseName === exerciseName)
+    if (range !== 'all') {
+      const days = Number(range)
+      const cutoff = new Date()
+      cutoff.setDate(cutoff.getDate() - days)
+      const cutoffIso = cutoff.toISOString().slice(0, 10)
+      scoped = scoped.filter((entry) => entry.date >= cutoffIso)
+    }
+    const byDate = new Map<string, number>()
+    for (const entry of scoped) {
+      byDate.set(entry.date, (byDate.get(entry.date) ?? 0) + entry.reps)
+    }
+    return [...byDate.entries()]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([entryDate, reps]) => ({ date: entryDate, reps }))
+  }, [items, exerciseName, range])
+
+  function selectExercise(name: string) {
+    setExerciseName(name)
+    setReps(0)
+  }
+
   function handleLog() {
-    if (!effectiveName || reps <= 0) return
+    if (reps <= 0) return
     addItem({
       id: crypto.randomUUID(),
       date,
-      exerciseName: effectiveName,
+      exerciseName,
       reps,
       addedWeightLbs: Number(addedWeight) || 0,
     })
@@ -41,28 +79,21 @@ export default function ExerciseTracker() {
     <div className="panel">
       <h2>Exercise</h2>
 
-      <div className="quick-form exercise-form">
-        <select value={exerciseName} onChange={(e) => setExerciseName(e.target.value)}>
-          {COMMON_EXERCISES.map((name) => (
-            <option key={name} value={name}>
-              {name}
-            </option>
-          ))}
-          <option value="__custom__">Custom…</option>
-        </select>
-        {exerciseName === '__custom__' && (
-          <input
-            type="text"
-            placeholder="Exercise name"
-            value={customExercise}
-            onChange={(e) => setCustomExercise(e.target.value)}
-          />
-        )}
-        <input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-        />
+      <div className="exercise-menu">
+        {COMMON_EXERCISES.map((name) => (
+          <button
+            key={name}
+            type="button"
+            className={name === exerciseName ? 'exercise-btn active' : 'exercise-btn'}
+            onClick={() => selectExercise(name)}
+          >
+            {name}
+          </button>
+        ))}
+      </div>
+
+      <div className="quick-form">
+        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
       </div>
 
       <div className="rep-row">
@@ -91,9 +122,38 @@ export default function ExerciseTracker() {
             onChange={(e) => setAddedWeight(e.target.value)}
           />
         </label>
-        <button type="button" className="log-btn" onClick={handleLog} disabled={!effectiveName || reps <= 0}>
+        <button type="button" className="log-btn" onClick={handleLog} disabled={reps <= 0}>
           Log set
         </button>
+      </div>
+
+      <div className="range-selector">
+        {(Object.keys(RANGE_LABELS) as RangeOption[]).map((option) => (
+          <button
+            key={option}
+            type="button"
+            className={option === range ? 'range-btn active' : 'range-btn'}
+            onClick={() => setRange(option)}
+          >
+            {RANGE_LABELS[option]}
+          </button>
+        ))}
+      </div>
+
+      <div className="chart-wrap">
+        {chartData.length === 0 ? (
+          <p className="empty">No {exerciseName} sets in this range yet.</p>
+        ) : (
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={chartData} margin={{ top: 20, right: 16, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+              <YAxis allowDecimals={false} tick={{ fontSize: 12 }} unit=" reps" width={60} />
+              <Tooltip />
+              <Bar dataKey="reps" fill="var(--accent)" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
       </div>
 
       {sorted.length > 0 && (

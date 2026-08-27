@@ -10,6 +10,7 @@ import {
 } from 'recharts'
 import type { WeightEntry } from './types'
 import { useLocalStorageList } from './useLocalStorageList'
+import WeightPicker from './WeightPicker'
 
 type RangeOption = '7' | '30' | '90' | 'all'
 
@@ -26,7 +27,7 @@ function todayIso() {
 
 export default function WeightTracker() {
   const { items, addItem, removeItem } = useLocalStorageList<WeightEntry>('weight-entries')
-  const [weight, setWeight] = useState('')
+  const [weight, setWeight] = useState(150)
   const [date, setDate] = useState(todayIso())
   const [range, setRange] = useState<RangeOption>('30')
 
@@ -51,10 +52,7 @@ export default function WeightTracker() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    const value = Number(weight)
-    if (!weight || Number.isNaN(value) || value <= 0) return
-    addItem({ id: crypto.randomUUID(), date, weightLbs: value })
-    setWeight('')
+    addItem({ id: crypto.randomUUID(), date, weightLbs: weight })
   }
 
   return (
@@ -62,15 +60,7 @@ export default function WeightTracker() {
       <h2>Weight</h2>
 
       <form className="quick-form" onSubmit={handleSubmit}>
-        <input
-          type="number"
-          inputMode="decimal"
-          step="0.1"
-          placeholder="Weight (lbs)"
-          value={weight}
-          onChange={(e) => setWeight(e.target.value)}
-          autoFocus
-        />
+        <WeightPicker value={weight} onChange={setWeight} />
         <input
           type="date"
           value={date}

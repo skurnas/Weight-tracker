@@ -54,10 +54,71 @@
   margin-bottom: 1rem;
 }
 
-.quick-form input,
-.quick-form select {
+.quick-form input {
   flex: 1;
   min-width: 120px;
+}
+
+.wheel-picker {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  background: #10131a;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0 0.6rem;
+  width: fit-content;
+}
+
+.wheel-highlight {
+  position: absolute;
+  left: 0.3rem;
+  right: 0.3rem;
+  top: 50%;
+  height: 28px;
+  transform: translateY(-50%);
+  border-top: 1px solid var(--accent);
+  border-bottom: 1px solid var(--accent);
+  pointer-events: none;
+}
+
+.wheel-col {
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+  width: 30px;
+}
+
+.wheel-col::-webkit-scrollbar {
+  display: none;
+}
+
+.wheel-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  scroll-snap-align: center;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.wheel-item.selected {
+  color: var(--text);
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.wheel-dot {
+  color: var(--text-dim);
+  font-weight: 700;
+}
+
+.wheel-unit {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  margin-left: 0.15rem;
 }
 
 .quick-form button {
@@ -209,6 +270,27 @@
   cursor: not-allowed;
 }
 
-.exercise-form select {
-  flex: 2;
+.exercise-menu {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.exercise-btn {
+  flex: 1;
+  min-width: 100px;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  border-radius: 8px;
+  padding: 0.75rem 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.exercise-btn.active {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--text);
 }

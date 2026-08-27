@@ -12,15 +12,4 @@ export interface ExerciseSet {
   addedWeightLbs: number
 }
 
-export const COMMON_EXERCISES = [
-  'Bench Press',
-  'Squat',
-  'Deadlift',
-  'Overhead Press',
-  'Barbell Row',
-  'Pull-up',
-  'Push-up',
-  'Bicep Curl',
-  'Tricep Extension',
-  'Lat Pulldown',
-] as const
+export const COMMON_EXERCISES = ['Push-up', 'Pull-up', 'Plank', 'Squat'] as const
