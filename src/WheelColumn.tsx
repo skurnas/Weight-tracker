@@ -1,18 +1,20 @@
 import { useCallback, useEffect, useRef } from 'react'
 
-export const ITEM_HEIGHT = 28
-export const VISIBLE_COUNT = 3
-const PAD = ITEM_HEIGHT * Math.floor(VISIBLE_COUNT / 2)
+export const DEFAULT_ITEM_HEIGHT = 28
+const VISIBLE_COUNT = 3
 
 export function WheelColumn({
   values,
   value,
   onChange,
+  itemHeight = DEFAULT_ITEM_HEIGHT,
 }: {
   values: number[]
   value: number
   onChange: (v: number) => void
+  itemHeight?: number
 }) {
+  const pad = itemHeight * Math.floor(VISIBLE_COUNT / 2)
   const ref = useRef<HTMLDivElement>(null)
   const scrollTimer = useRef<number>(undefined)
 
@@ -20,41 +22,41 @@ export function WheelColumn({
     const idx = values.indexOf(value)
     const el = ref.current
     if (idx < 0 || !el) return
-    const target = idx * ITEM_HEIGHT
+    const target = idx * itemHeight
     if (Math.abs(el.scrollTop - target) > 1) el.scrollTop = target
-  }, [value, values])
+  }, [value, values, itemHeight])
 
   const handleScroll = useCallback(() => {
     window.clearTimeout(scrollTimer.current)
     scrollTimer.current = window.setTimeout(() => {
       const el = ref.current
       if (!el) return
-      const idx = Math.min(Math.max(Math.round(el.scrollTop / ITEM_HEIGHT), 0), values.length - 1)
-      el.scrollTo({ top: idx * ITEM_HEIGHT, behavior: 'smooth' })
+      const idx = Math.min(Math.max(Math.round(el.scrollTop / itemHeight), 0), values.length - 1)
+      el.scrollTo({ top: idx * itemHeight, behavior: 'smooth' })
       const v = values[idx]
       if (v !== value) onChange(v)
     }, 120)
-  }, [value, values, onChange])
+  }, [value, values, onChange, itemHeight])
 
   return (
     <div
       className="wheel-col"
       ref={ref}
-      style={{ height: ITEM_HEIGHT * VISIBLE_COUNT }}
+      style={{ height: itemHeight * VISIBLE_COUNT }}
       onScroll={handleScroll}
     >
-      <div style={{ height: PAD }} />
+      <div style={{ height: pad }} />
       {values.map((v) => (
         <div
           key={v}
           className={v === value ? 'wheel-item selected' : 'wheel-item'}
-          style={{ height: ITEM_HEIGHT }}
+          style={{ height: itemHeight }}
           onClick={() => onChange(v)}
         >
           {v}
         </div>
       ))}
-      <div style={{ height: PAD }} />
+      <div style={{ height: pad }} />
     </div>
   )
 }

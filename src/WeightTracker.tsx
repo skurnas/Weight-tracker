@@ -28,7 +28,10 @@ function todayIso() {
 
 export default function WeightTracker() {
   const { items, addItem, removeItem } = useLocalStorageList<WeightEntry>('weight-entries')
-  const [weight, setWeight] = useState(150)
+  const [weight, setWeight] = useState(() => {
+    const latest = [...items].sort((a, b) => a.date.localeCompare(b.date)).at(-1)
+    return latest ? latest.weightLbs : 150
+  })
   const [date, setDate] = useState(todayIso())
   const [range, setRange] = useState<RangeOption>('30')
   const [importText, setImportText] = useState('')
