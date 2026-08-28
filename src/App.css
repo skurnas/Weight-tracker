@@ -273,6 +273,57 @@
   cursor: not-allowed;
 }
 
+.import {
+  margin-top: 1.25rem;
+  color: var(--text-dim);
+}
+
+.import summary {
+  cursor: pointer;
+  color: var(--text);
+}
+
+.import-hint {
+  font-size: 0.85rem;
+  margin: 0.6rem 0;
+}
+
+.import-hint code {
+  background: #10131a;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.05rem 0.3rem;
+  font-size: 0.8rem;
+}
+
+.import-textarea {
+  width: 100%;
+  resize: vertical;
+  font-family: ui-monospace, monospace;
+  font-size: 0.85rem;
+  margin-bottom: 0.6rem;
+}
+
+.import button {
+  background: var(--accent);
+  border: none;
+  color: white;
+  border-radius: 6px;
+  padding: 0.5rem 1.2rem;
+  font-weight: 600;
+}
+
+.import button:disabled {
+  background: var(--border);
+  color: var(--text-dim);
+  cursor: not-allowed;
+}
+
+.import-result {
+  font-size: 0.85rem;
+  margin-top: 0.6rem;
+}
+
 .exercise-menu {
   display: flex;
   gap: 0.5rem;

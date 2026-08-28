@@ -11,6 +11,7 @@ import {
 import type { WeightEntry } from './types'
 import { useLocalStorageList } from './useLocalStorageList'
 import WeightPicker from './WeightPicker'
+import { parseWeightImport } from './parseWeightImport'
 
 type RangeOption = '7' | '30' | '90' | 'all'
 
@@ -30,6 +31,8 @@ export default function WeightTracker() {
   const [weight, setWeight] = useState(150)
   const [date, setDate] = useState(todayIso())
   const [range, setRange] = useState<RangeOption>('30')
+  const [importText, setImportText] = useState('')
+  const [importResult, setImportResult] = useState<{ count: number; skipped: number } | null>(null)
 
   const sorted = useMemo(
     () => [...items].sort((a, b) => a.date.localeCompare(b.date)),
@@ -53,6 +56,13 @@ export default function WeightTracker() {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     addItem({ id: crypto.randomUUID(), date, weightLbs: weight })
+  }
+
+  function handleImport() {
+    const { entries, skipped } = parseWeightImport(importText)
+    for (const entry of entries) addItem(entry)
+    setImportResult({ count: entries.length, skipped })
+    setImportText('')
   }
 
   return (
@@ -121,6 +131,34 @@ export default function WeightTracker() {
           </ul>
         </details>
       )}
+
+      <details className="import">
+        <summary>Import history</summary>
+        <p className="import-hint">
+          Paste one entry per line as <code>date, weight</code> — e.g. <code>2026-01-15, 182.4</code>.
+          Dates can be YYYY-MM-DD or M/D/YYYY, separated by a comma or tab (so pasting straight from a
+          spreadsheet works too).
+        </p>
+        <textarea
+          className="import-textarea"
+          rows={6}
+          placeholder={'2026-01-15, 182.4\n2026-01-20, 181.0'}
+          value={importText}
+          onChange={(e) => setImportText(e.target.value)}
+        />
+        <button type="button" onClick={handleImport} disabled={!importText.trim()}>
+          Import
+        </button>
+        {importResult && (
+          <p className="import-result">
+            Imported {importResult.count} {importResult.count === 1 ? 'entry' : 'entries'}
+            {importResult.skipped > 0
+              ? `, skipped ${importResult.skipped} line${importResult.skipped === 1 ? '' : 's'} that couldn't be parsed`
+              : ''}
+            .
+          </p>
+        )}
+      </details>
     </div>
   )
 }
