@@ -12,6 +12,7 @@ import type { ExerciseSet } from './types'
 import { COMMON_EXERCISES } from './types'
 import { useLocalStorageList } from './useLocalStorageList'
 import AddedWeightPicker from './AddedWeightPicker'
+import { dateToTimestamp, formatAxisTick, formatTooltipDate } from './dateAxis'
 
 const REP_INCREMENTS = [1, 5, 10] as const
 type RangeOption = '7' | '30' | '90' | 'all'
@@ -55,7 +56,7 @@ export default function ExerciseTracker() {
     }
     return [...byDate.entries()]
       .sort(([a], [b]) => a.localeCompare(b))
-      .map(([entryDate, reps]) => ({ date: entryDate, reps }))
+      .map(([entryDate, reps]) => ({ date: dateToTimestamp(entryDate), reps }))
   }, [items, exerciseName, range])
 
   function selectExercise(name: string) {
@@ -141,10 +142,17 @@ export default function ExerciseTracker() {
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={chartData} margin={{ top: 20, right: 16, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-              <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+              <XAxis
+                dataKey="date"
+                type="number"
+                scale="time"
+                domain={['dataMin', 'dataMax']}
+                tickFormatter={formatAxisTick}
+                tick={{ fontSize: 12 }}
+              />
               <YAxis allowDecimals={false} tick={{ fontSize: 12 }} unit=" reps" width={60} />
-              <Tooltip />
-              <Bar dataKey="reps" fill="var(--accent)" radius={[4, 4, 0, 0]} />
+              <Tooltip labelFormatter={(label) => formatTooltipDate(Number(label))} />
+              <Bar dataKey="reps" fill="var(--accent)" radius={[4, 4, 0, 0]} barSize={16} />
             </BarChart>
           </ResponsiveContainer>
         )}

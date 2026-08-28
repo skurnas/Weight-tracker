@@ -12,6 +12,7 @@ import type { WeightEntry } from './types'
 import { useLocalStorageList } from './useLocalStorageList'
 import WeightPicker from './WeightPicker'
 import { parseWeightImport } from './parseWeightImport'
+import { dateToTimestamp, formatAxisTick, formatTooltipDate } from './dateAxis'
 
 type RangeOption = '7' | '30' | '90' | 'all'
 
@@ -52,7 +53,7 @@ export default function WeightTracker() {
   }, [sorted, range])
 
   const chartData = filtered.map((entry) => ({
-    date: entry.date,
+    date: dateToTimestamp(entry.date),
     weight: entry.weightLbs,
   }))
 
@@ -102,9 +103,16 @@ export default function WeightTracker() {
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={chartData} margin={{ top: 20, right: 16, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-              <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+              <XAxis
+                dataKey="date"
+                type="number"
+                scale="time"
+                domain={['dataMin', 'dataMax']}
+                tickFormatter={formatAxisTick}
+                tick={{ fontSize: 12 }}
+              />
               <YAxis domain={['auto', 'auto']} tick={{ fontSize: 12 }} unit=" lbs" width={60} />
-              <Tooltip />
+              <Tooltip labelFormatter={(label) => formatTooltipDate(Number(label))} />
               <Line
                 type="monotone"
                 dataKey="weight"
