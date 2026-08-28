@@ -11,6 +11,7 @@ import {
 import type { ExerciseSet } from './types'
 import { COMMON_EXERCISES } from './types'
 import { useLocalStorageList } from './useLocalStorageList'
+import AddedWeightPicker from './AddedWeightPicker'
 
 const REP_INCREMENTS = [1, 5, 10] as const
 type RangeOption = '7' | '30' | '90' | 'all'
@@ -30,7 +31,7 @@ export default function ExerciseTracker() {
   const { items, addItem, removeItem } = useLocalStorageList<ExerciseSet>('exercise-sets')
   const [exerciseName, setExerciseName] = useState<string>(COMMON_EXERCISES[0])
   const [reps, setReps] = useState(0)
-  const [addedWeight, setAddedWeight] = useState('')
+  const [addedWeight, setAddedWeight] = useState(0)
   const [date, setDate] = useState(todayIso())
   const [range, setRange] = useState<RangeOption>('30')
 
@@ -69,10 +70,10 @@ export default function ExerciseTracker() {
       date,
       exerciseName,
       reps,
-      addedWeightLbs: Number(addedWeight) || 0,
+      addedWeightLbs: addedWeight,
     })
     setReps(0)
-    setAddedWeight('')
+    setAddedWeight(0)
   }
 
   return (
@@ -111,17 +112,10 @@ export default function ExerciseTracker() {
       </div>
 
       <div className="weight-row">
-        <label>
-          Added weight (lbs)
-          <input
-            type="number"
-            inputMode="decimal"
-            step="0.5"
-            placeholder="0"
-            value={addedWeight}
-            onChange={(e) => setAddedWeight(e.target.value)}
-          />
-        </label>
+        <div className="field">
+          <span className="field-label">Added weight</span>
+          <AddedWeightPicker value={addedWeight} onChange={setAddedWeight} />
+        </div>
         <button type="button" className="log-btn" onClick={handleLog} disabled={reps <= 0}>
           Log set
         </button>

@@ -246,10 +246,13 @@
   flex-wrap: wrap;
 }
 
-.weight-row label {
+.field {
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
+}
+
+.field-label {
   font-size: 0.85rem;
   color: var(--text-dim);
 }
